@@ -12,16 +12,29 @@ class TodoRepositoryImpl: TodoRepository {
     @Autowired // 자동 주입/접근
     lateinit var todoDataBase: TodoDataBase
 
-    override fun save(todo: Todo): Todo {
+    override fun save(todo: Todo): Todo? {
 
-        return todo.apply {
-            this.index = ++todoDataBase.index // 마지막 인덱스에서 +1한 값으로 적용.
-            this.createdAt = LocalDateTime.now()
-            this.updatedAt = LocalDateTime.now()
-        }.run {
-            todoDataBase.todoList.add(todo)
-            this
+        // 1. index 유/무
+        return todo.index?.let { index -> // index 유 -> update
+            // update
+            findOne(index)?.apply {
+                this.title = todo.title
+                this.description = todo.description
+                this.schedule = todo.schedule
+                this.updatedAt = LocalDateTime.now()
+            }
+        }?: kotlin.run {    // index 무 -> insert
+            // insert
+            todo.apply {
+                this.index = ++todoDataBase.index // 마지막 인덱스에서 +1한 값으로 적용.
+                this.createdAt = LocalDateTime.now()
+                this.updatedAt = LocalDateTime.now()
+            }.run {
+                todoDataBase.todoList.add(todo)
+                this
+            }
         }
+
     }
 
     override fun saveAll(todoList: MutableList<Todo>): Boolean {
@@ -36,12 +49,15 @@ class TodoRepositoryImpl: TodoRepository {
         }
     }
 
-    override fun update(todo: Todo): Todo {
-        TODO("Not yet implemented")
-    }
 
     override fun delete(index: Int): Boolean {
-        TODO("Not yet implemented")
+        val todo = findOne(index)
+
+        return todo?.let {
+            todoDataBase.todoList.remove(it)
+        }?: kotlin.run {
+            false
+        }
     }
 
     override fun findOne(index: Int): Todo? {
@@ -49,6 +65,6 @@ class TodoRepositoryImpl: TodoRepository {
     }
 
     override fun findAll(): MutableList<Todo> {
-        TODO("Not yet implemented")
+        return todoDataBase.todoList
     }
 }

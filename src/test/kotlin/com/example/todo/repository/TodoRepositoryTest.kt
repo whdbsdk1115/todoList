@@ -34,11 +34,11 @@ class TodoRepositoryTest {
 
         val result = todoRepositoryImpl.save(todo)
 
-        Assertions.assertEquals(1, result.index)
-        Assertions.assertNotNull(result.createdAt)
-        Assertions.assertNotNull(result.updatedAt)
-        Assertions.assertEquals("테스트 일정", result.title)
-        Assertions.assertEquals("테스트", result.description)
+        Assertions.assertEquals(1, result?.index)
+        Assertions.assertNotNull(result?.createdAt)
+        Assertions.assertNotNull(result?.updatedAt)
+        Assertions.assertEquals("테스트 일정", result?.title)
+        Assertions.assertEquals("테스트", result?.description)
     }
 
     @Test
@@ -90,6 +90,42 @@ class TodoRepositoryTest {
         val result = todoRepositoryImpl.findOne(2)
         Assertions.assertNotNull(result)
         Assertions.assertEquals("테스트 일정2", result?.title)
+    }
+
+    @Test
+    fun updateTest() {
+        val todo = Todo().apply {
+            this.title = "테스트 일정"
+            this.description = "테스트"
+            this.schedule = LocalDateTime.now()
+        }
+        val insertTodo = todoRepositoryImpl.save(todo)
+
+        val newTodo = Todo().apply {
+            this.index = insertTodo?.index
+            this.title = "업데이트 일정"
+            this.description = "업데이트 테스트"
+            this.schedule = LocalDateTime.now()
+        }
+        val result = todoRepositoryImpl.save(newTodo)
+
+        Assertions.assertNotNull(result)
+        Assertions.assertEquals(insertTodo?.index, result?.index)
+        Assertions.assertEquals("업데이트 일정", result?.title)
+        Assertions.assertEquals("업데이트 테스트", result?.description)
+    }
+
+    @Test
+    fun deleteTest() {
+        val todo = Todo().apply {
+            this.title = "테스트 일정"
+            this.description = "테스트"
+            this.schedule = LocalDateTime.now()
+        }
+        todoRepositoryImpl.save(todo)
+
+        val result = todoRepositoryImpl.delete(1)
+        Assertions.assertEquals(true, result)
     }
 
 }
